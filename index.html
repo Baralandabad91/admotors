@@ -1,0 +1,1740 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AD Motors — Flotta Completa</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#0e0e12;--sidebar-bg:#13131a;--sidebar-active:#1e1b2e;
+  --surface:#18181f;--surface2:#1f1f28;--border:rgba(255,255,255,0.07);
+  --violet:#7c5cfc;--violet-light:#a78bfa;--cyan:#22d3bc;
+  --text:#f0eff8;--text-muted:#6b6a80;--text-dim:#9998b0;
+  --cat-pink:#f472b6;--cat-amber:#fbbf24;--cat-green:#4ade80;
+  --cat-blue:#60a5fa;--cat-orange:#fb923c;--cat-teal:#2dd4bf;
+  --sidebar-w:240px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--text);height:100dvh;display:flex;flex-direction:column;overflow:hidden;}
+
+/* MOBILE */
+.mobile-topbar{display:none;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0;z-index:50;}
+.mobile-logo{font-size:16px;font-weight:700;}
+.mobile-menu-btn{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);cursor:pointer;font-family:'Syne',sans-serif;font-size:13px;display:flex;align-items:center;gap:6px;}
+.mobile-search{display:none;padding:10px 16px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0;}
+.mobile-search .search-wrap{width:100%;}
+.drawer-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:100;}
+.drawer-overlay.open{display:block;}
+.app-body{display:flex;flex:1;overflow:hidden;}
+
+/* SIDEBAR */
+.sidebar{width:var(--sidebar-w);background:var(--sidebar-bg);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto;transition:transform .25s ease;}
+.sidebar-header{padding:24px 20px 16px;border-bottom:1px solid var(--border);}
+.user-avatar{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,var(--violet),var(--cyan));display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:#fff;margin-bottom:10px;}
+.user-name{font-size:15px;font-weight:600;}
+.user-role{font-size:12px;color:var(--text-muted);margin-top:2px;}
+.sidebar-nav{padding:12px 0;flex:1;}
+.nav-section-label{font-size:10px;font-weight:600;letter-spacing:.1em;color:var(--text-muted);text-transform:uppercase;padding:16px 20px 6px;}
+.sede-header{display:flex;align-items:center;gap:10px;padding:10px 20px;cursor:pointer;transition:background .15s;user-select:none;}
+.sede-header:hover{background:rgba(124,92,252,.08);}
+.sede-header.active{background:var(--sidebar-active);}
+.sede-header .icon{width:18px;height:18px;opacity:.5;flex-shrink:0;}
+.sede-header .name{font-size:14px;font-weight:500;flex:1;}
+.sede-header.active .name{color:var(--violet-light);}
+.sede-header .count{font-size:11px;color:var(--text-muted);background:var(--surface2);padding:2px 7px;border-radius:10px;}
+.sede-header .chevron{font-size:10px;color:var(--text-muted);transition:transform .2s;}
+.sede-header.open .chevron{transform:rotate(90deg);}
+.sede-children{display:none;}
+.sede-children.open{display:block;}
+.cat-item{display:flex;align-items:center;justify-content:space-between;padding:7px 16px 7px 46px;font-size:13px;color:var(--text-dim);cursor:pointer;transition:color .15s,background .15s;}
+.cat-item:hover{color:var(--text);background:rgba(255,255,255,.03);}
+.cat-item.active{color:var(--violet-light);background:rgba(124,92,252,.1);border-left:2px solid var(--violet);padding-left:44px;}
+.cat-item .cnt{font-size:10px;color:var(--text-muted);}
+.cat-item.active .cnt{color:var(--violet-light);}
+
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:18px 32px;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0;}
+.topbar-title{font-size:22px;font-weight:700;letter-spacing:-.02em;}
+.search-wrap{display:flex;align-items:center;background:var(--surface2);border:1px solid var(--border);border-radius:24px;padding:8px 16px;width:280px;}
+.search-wrap input{background:none;border:none;outline:none;font-family:'Syne',sans-serif;font-size:13px;color:var(--text);flex:1;}
+.search-wrap input::placeholder{color:var(--text-muted);}
+.search-icon{color:var(--text-muted);margin-right:8px;font-size:14px;}
+.content-header{padding:16px 24px 0;flex-shrink:0;}
+.breadcrumb{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-muted);margin-bottom:4px;flex-wrap:wrap;}
+.breadcrumb .sep{opacity:.3;}
+.breadcrumb .current{color:var(--text);font-weight:600;}
+.breadcrumb .sede-crumb{color:var(--violet-light);}
+.page-desc{font-size:12px;color:var(--text-muted);margin-bottom:12px;}
+.toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.filter-wrap{position:relative;}
+.filter-btn{display:flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 12px;font-family:'Syne',sans-serif;font-size:12px;color:var(--text-dim);cursor:pointer;white-space:nowrap;transition:border-color .15s;}
+.filter-btn:hover,.filter-btn.active{border-color:var(--violet);color:var(--text);}
+.filter-dropdown{display:none;position:absolute;top:calc(100% + 6px);left:0;background:var(--surface);border:1px solid var(--border);border-radius:10px;min-width:200px;z-index:50;padding:6px 0;box-shadow:0 8px 32px rgba(0,0,0,.5);max-height:240px;overflow-y:auto;}
+.filter-dropdown.open{display:block;}
+.filter-option{padding:9px 16px;font-size:13px;color:var(--text-dim);cursor:pointer;display:flex;align-items:center;gap:8px;}
+.filter-option:hover{background:rgba(124,92,252,.1);color:var(--text);}
+.filter-option.selected{color:var(--violet-light);}
+.filter-option .tick{opacity:0;font-size:11px;}
+.filter-option.selected .tick{opacity:1;}
+.filter-clear{padding:7px 16px;font-size:11px;color:var(--text-muted);cursor:pointer;border-top:1px solid var(--border);margin-top:4px;}
+.filter-clear:hover{color:var(--text);}
+.fonte-toggle{display:flex;gap:4px;margin-left:4px;}
+.fonte-btn{padding:5px 10px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);font-family:'Syne',sans-serif;font-size:11px;color:var(--text-muted);cursor:pointer;}
+.fonte-btn.active{border-color:var(--violet);color:var(--violet-light);background:rgba(124,92,252,.1);}
+
+.stats-bar{display:flex;gap:20px;padding:10px 24px;border-bottom:1px solid var(--border);flex-shrink:0;flex-wrap:wrap;overflow-x:auto;}
+.stat-item{display:flex;align-items:center;gap:8px;white-space:nowrap;}
+.stat-num{font-size:18px;font-weight:700;color:var(--violet-light);}
+.stat-label{font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;}
+
+/* TABLE */
+.table-wrap{flex:1;overflow-y:auto;padding:12px 24px 24px;}
+table{width:100%;border-collapse:collapse;}
+thead th{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);padding:10px 10px;text-align:left;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--bg);z-index:2;}
+tbody tr{border-bottom:1px solid var(--border);transition:background .12s;}
+tbody tr:hover{background:rgba(124,92,252,.05);}
+tbody tr:last-child{border-bottom:none;}
+tbody td{padding:11px 10px;font-size:13px;vertical-align:middle;}
+.targa-cell{display:flex;align-items:center;gap:8px;}
+.accent-bar{width:3px;height:20px;background:var(--cyan);border-radius:2px;flex-shrink:0;}
+.targa-text{font-family:'DM Mono',monospace;font-size:13px;font-weight:500;color:var(--text);letter-spacing:.04em;}
+.badge{display:inline-block;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:600;white-space:nowrap;}
+.badge-marca{background:rgba(34,211,188,.12);color:#22d3bc;}
+.badge-cat1{background:rgba(244,114,182,.15);color:var(--cat-pink);}
+.badge-cat2{background:rgba(251,191,36,.12);color:var(--cat-amber);}
+.badge-cat3{background:rgba(74,222,128,.12);color:var(--cat-green);}
+.badge-cat4{background:rgba(96,165,250,.12);color:var(--cat-blue);}
+.badge-cat5{background:rgba(251,146,60,.12);color:var(--cat-orange);}
+.badge-cat6{background:rgba(45,212,191,.12);color:var(--cat-teal);}
+.badge-proprieta{background:rgba(167,139,250,.12);color:var(--violet-light);}
+.tag-kinto{background:rgba(34,211,188,.08);color:var(--cyan);font-size:10px;padding:2px 6px;border-radius:4px;}
+.tag-prop{background:rgba(167,139,250,.08);color:var(--violet-light);font-size:10px;padding:2px 6px;border-radius:4px;}
+.date-cell{font-size:12px;color:var(--text-dim);}
+.colore-dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);margin-right:4px;vertical-align:middle;}
+.empty-state{text-align:center;padding:60px 20px;color:var(--text-muted);}
+.empty-state .big-icon{font-size:44px;margin-bottom:14px;}
+.empty-state p{font-size:14px;}
+
+/* RESPONSIVE */
+@media(max-width:700px){
+  body{flex-direction:column;}
+  .mobile-topbar{display:flex;}
+  .mobile-search{display:block;}
+  .app-body{position:relative;}
+  .sidebar{position:fixed;top:0;left:0;bottom:0;z-index:110;transform:translateX(-100%);width:280px;box-shadow:4px 0 24px rgba(0,0,0,.5);}
+  .sidebar.open{transform:translateX(0);}
+  .topbar{display:none;}
+  .content-header{padding:12px 16px 0;}
+  .filter-btn{font-size:11px;padding:5px 9px;}
+  .table-wrap{padding:10px 10px 80px;}
+  thead th:nth-child(4),tbody td:nth-child(4),
+  thead th:nth-child(5),tbody td:nth-child(5){display:none;}
+  tbody td{padding:9px 6px;}
+  .targa-text{font-size:12px;}
+  .badge{font-size:10px;padding:2px 6px;}
+  .filter-dropdown{position:fixed;left:12px;right:12px;top:auto;width:auto;}
+  .stats-bar{padding:8px 12px;gap:10px;}
+}
+
+/* PRINT BUTTON */
+.print-btn{display:flex;align-items:center;justify-content:center;width:36px;height:36px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;cursor:pointer;color:var(--text-muted);transition:border-color .15s,color .15s;flex-shrink:0;margin-left:10px;}
+.print-btn:hover{border-color:var(--violet);color:var(--violet-light);}
+.print-btn svg{width:16px;height:16px;}
+
+/* PRINT */
+@media print {
+  @page { size: A4 portrait; margin: 16mm 12mm; }
+
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+
+  body {
+    background: #fff !important;
+    color: #111 !important;
+    height: auto !important;
+    overflow: visible !important;
+    display: block !important;
+  }
+
+  /* Nascondi tutto tranne il contenuto principale */
+  .mobile-topbar, .mobile-search, .drawer-overlay,
+  .sidebar, .topbar, .toolbar, .stats-bar,
+  .print-btn, .del-btn, .filter-wrap,
+  .empty-state { display: none !important; }
+
+  .app-body { display: block !important; overflow: visible !important; }
+  .main { overflow: visible !important; height: auto !important; }
+
+  /* Header di stampa */
+  .content-header { padding: 0 0 10px 0 !important; }
+  .breadcrumb { font-size: 13px !important; color: #333 !important; margin-bottom: 2px !important; }
+  .breadcrumb .sede-crumb { color: #5b3fcf !important; }
+  .breadcrumb .sep, .breadcrumb .current { color: #333 !important; }
+  .page-desc { font-size: 11px !important; color: #888 !important; margin-bottom: 8px !important; }
+
+  /* Intestazione con logo */
+  .content-header::before {
+    content: "AD MOTORS — Gestione Flotta";
+    display: block;
+    font-size: 18px;
+    font-weight: 700;
+    color: #5b3fcf;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #5b3fcf;
+    letter-spacing: -0.02em;
+  }
+
+  /* Tabella */
+  .table-wrap { padding: 0 !important; overflow: visible !important; height: auto !important; }
+  table { width: 100% !important; border-collapse: collapse !important; font-size: 11px !important; }
+  thead th {
+    background: #f4f2ff !important;
+    color: #333 !important;
+    padding: 7px 8px !important;
+    border-bottom: 2px solid #5b3fcf !important;
+    font-size: 10px !important;
+    letter-spacing: .06em !important;
+    position: static !important;
+  }
+  tbody tr { border-bottom: 1px solid #e5e5e5 !important; page-break-inside: avoid; }
+  tbody tr:hover { background: none !important; }
+  tbody td { padding: 7px 8px !important; color: #222 !important; font-size: 11px !important; }
+
+  /* Targa */
+  .accent-bar { background: #22d3bc !important; }
+  .targa-text { color: #111 !important; font-size: 11px !important; }
+
+  /* Badge */
+  .badge { border: 1px solid #ccc !important; background: #f9f9f9 !important; color: #333 !important; font-size: 10px !important; }
+  .badge-cat1 { border-color: #f472b6 !important; color: #b5366e !important; background: #fff0f6 !important; }
+  .badge-cat2 { border-color: #fbbf24 !important; color: #92600a !important; background: #fffbeb !important; }
+  .badge-cat3 { border-color: #4ade80 !important; color: #166534 !important; background: #f0fdf4 !important; }
+  .badge-cat4 { border-color: #60a5fa !important; color: #1d4ed8 !important; background: #eff6ff !important; }
+  .badge-marca { border-color: #22d3bc !important; color: #0e7a6e !important; background: #f0fdfa !important; }
+  .tag-kinto { color: #0e7a6e !important; background: #f0fdfa !important; border: 1px solid #22d3bc !important; border-radius: 4px !important; }
+  .tag-prop { color: #5b3fcf !important; background: #f4f2ff !important; border: 1px solid #a78bfa !important; border-radius: 4px !important; }
+  .date-cell { color: #555 !important; font-size: 10px !important; }
+  .catalog-cell, td:nth-child(3) { color: #555 !important; font-size: 10px !important; }
+}
+
+/* ADESIVO */
+tbody tr.adesivo { background: rgba(74,222,128,0.08) !important; }
+tbody tr.adesivo:hover { background: rgba(74,222,128,0.14) !important; }
+tbody tr.adesivo .accent-bar { background: #4ade80 !important; }
+.btn-adesivo { background: none; border: none; cursor: pointer; padding: 4px 6px; border-radius: 6px; font-size: 15px; line-height:1; opacity:0.35; transition: opacity .15s, transform .15s; }
+.btn-adesivo:hover { opacity: 0.7; }
+.btn-adesivo.on { opacity: 1; transform: scale(1.15); }
+@media print {
+  tbody tr.adesivo { background: rgba(74,222,128,0.12) !important; }
+  .btn-adesivo { display: none !important; }
+}
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:4px;}
+</style>
+</head>
+<body>
+
+<div class="mobile-topbar">
+  <div class="mobile-logo"><span style="color:var(--violet-light)">AD</span> MOTORS</div>
+  <div style="display:flex;align-items:center;gap:8px;">
+    <button class="print-btn" onclick="window.print()" title="Stampa / Esporta PDF" style="width:32px;height:32px;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="6 9 6 2 18 2 18 9"/>
+        <path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/>
+        <rect x="6" y="14" width="12" height="8"/>
+      </svg>
+    </button>
+    <button class="mobile-menu-btn" onclick="toggleDrawer()">☰ Sedi</button>
+  </div>
+</div>
+<div class="mobile-search">
+  <div class="search-wrap">
+    <span class="search-icon">🔍</span>
+    <input type="text" id="searchMobile" placeholder="Cerca targa, modello..." oninput="syncSearch(this)">
+  </div>
+</div>
+<div class="drawer-overlay" id="drawerOverlay" onclick="toggleDrawer()"></div>
+
+<div class="app-body">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="user-avatar">V</div>
+      <div class="user-name">Vincenzo</div>
+      <div class="user-role">Gestione Flotta</div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Sedi</div>
+      <div id="sidebarSedi"></div>
+    </nav>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div class="topbar-title"><span style="color:var(--violet-light)">AD</span> MOTORS <span style="font-size:13px;font-weight:400;color:var(--text-muted);margin-left:6px;letter-spacing:.05em">flotta completa</span></div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div class="search-wrap">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="searchInput" placeholder="Cerca targa, modello..." oninput="syncSearch(this)">
+        </div>
+        <button class="print-btn" onclick="window.print()" title="Stampa / Esporta PDF">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 6 2 18 2 18 9"/>
+            <path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/>
+            <rect x="6" y="14" width="12" height="8"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="content-header">
+      <div class="breadcrumb">
+        <span class="sede-crumb" id="bcSede">—</span>
+        <span class="sep">/</span>
+        <span class="current" id="bcCat">Seleziona una sede</span>
+      </div>
+      <div class="page-desc" id="pageDesc">Seleziona una sede dalla sidebar.</div>
+      <div class="toolbar" id="toolbar">
+        <div class="filter-wrap">
+          <button class="filter-btn" id="btnModello" onclick="toggleFilter('modello')">Modello ▾</button>
+          <div class="filter-dropdown" id="dropModello"></div>
+        </div>
+        <div class="filter-wrap">
+          <button class="filter-btn" id="btnMarca" onclick="toggleFilter('marca')">Marca ▾</button>
+          <div class="filter-dropdown" id="dropMarca"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="stats-bar" id="statsBar" style="display:none">
+      <div class="stat-item"><span class="stat-num" id="statTot">0</span><span class="stat-label">Totale</span></div>
+      <div class="stat-item"><span class="stat-num" id="statDemo" style="color:var(--cat-pink)">0</span><span class="stat-label">Demo</span></div>
+      <div class="stat-item"><span class="stat-num" id="statOff" style="color:var(--cat-amber)">0</span><span class="stat-label">Officina</span></div>
+      <div class="stat-item"><span class="stat-num" id="statCarr" style="color:var(--cat-green)">0</span><span class="stat-label">Carrozzeria</span></div>
+      <div class="stat-item"><span class="stat-num" id="statAltro" style="color:var(--cat-blue)">0</span><span class="stat-label">Altro</span></div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Targa</th>
+            <th>Modello</th>
+            <th>Catalogo</th>
+            <th>Categoria</th>
+            <th>Fonte</th>
+            <th>Data Fine</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+      <div id="emptyState" class="empty-state" style="display:none">
+        <div class="big-icon">🚗</div>
+        <p>Nessuna auto trovata</p>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+const DATA = {
+  "In Uso": {
+    "Kinto": [
+      {
+        "targa": "HB099CS",
+        "marca": "Lexus",
+        "modello": "Lbx",
+        "catalogo": "1.5 Hybrid 136 Elegant 2WD",
+        "colore": "",
+        "data_fine": "2027-09-25",
+        "fonte": "Kinto",
+        "cat_orig": "VISIBILITY ALAGNA"
+      },
+      {
+        "targa": "GV191VL",
+        "marca": "Lexus",
+        "modello": "Lbx",
+        "catalogo": "Emotion 2WD",
+        "colore": "",
+        "data_fine": "2025-12-25",
+        "fonte": "Kinto",
+        "cat_orig": "VISIBILITY  ITALIANO"
+      },
+      {
+        "targa": "HB160JF",
+        "marca": "Lexus",
+        "modello": "Nx",
+        "catalogo": "Plug-in F Sport AWD",
+        "colore": "",
+        "data_fine": "2026-11-02",
+        "fonte": "Kinto",
+        "cat_orig": "GIBIN"
+      },
+      {
+        "targa": "GZ150ER",
+        "marca": "Lexus",
+        "modello": "Nx",
+        "catalogo": "Plug-in Luxury 4WD",
+        "colore": "",
+        "data_fine": "2026-09-30",
+        "fonte": "Kinto",
+        "cat_orig": "BERNARDI"
+      },
+      {
+        "targa": "HC431DX",
+        "marca": "Toyota",
+        "modello": "Aygo X",
+        "catalogo": "Hybrid 115 Icon e-CVT",
+        "colore": "",
+        "data_fine": "2027-12-29",
+        "fonte": "Kinto",
+        "cat_orig": ""
+      },
+      {
+        "targa": "GZ808CG",
+        "marca": "Toyota",
+        "modello": "C-Hr",
+        "catalogo": "1.8 HV E-CVT Active",
+        "colore": "",
+        "data_fine": "2026-09-30",
+        "fonte": "Kinto",
+        "cat_orig": "BRUCATO"
+      },
+      {
+        "targa": "GY039NN",
+        "marca": "Toyota",
+        "modello": "C-Hr",
+        "catalogo": "2.0 PHEV E-CVT Trend",
+        "colore": "",
+        "data_fine": "2026-08-25",
+        "fonte": "Kinto",
+        "cat_orig": "NOLEGGIO SERICANO"
+      },
+      {
+        "targa": "GY055NN",
+        "marca": "Toyota",
+        "modello": "C-Hr",
+        "catalogo": "2.0 PHEV E-CVT Trend",
+        "colore": "",
+        "data_fine": "2026-08-25",
+        "fonte": "Kinto",
+        "cat_orig": "CORTESE"
+      },
+      {
+        "targa": "GY070NN",
+        "marca": "Toyota",
+        "modello": "C-Hr",
+        "catalogo": "2.0 PHEV E-CVT Trend",
+        "colore": "",
+        "data_fine": "2026-08-25",
+        "fonte": "Kinto",
+        "cat_orig": "CACCIN"
+      },
+      {
+        "targa": "GY982RG",
+        "marca": "Toyota",
+        "modello": "C-Hr",
+        "catalogo": "2.0 PHEV E-CVT Trend",
+        "colore": "",
+        "data_fine": "2026-08-31",
+        "fonte": "Kinto",
+        "cat_orig": "CORVAGLIA"
+      },
+      {
+        "targa": "GZ402WX",
+        "marca": "Toyota",
+        "modello": "Prius",
+        "catalogo": "Plug-in Hybrid Lounge",
+        "colore": "",
+        "data_fine": "2026-05-31",
+        "fonte": "Kinto",
+        "cat_orig": "BELLATI"
+      },
+      {
+        "targa": "GZ352WX",
+        "marca": "Toyota",
+        "modello": "Prius",
+        "catalogo": "Plug-in Hybrid Lounge+",
+        "colore": "",
+        "data_fine": "2026-05-31",
+        "fonte": "Kinto",
+        "cat_orig": "ADORNO"
+      },
+      {
+        "targa": "HB812CT",
+        "marca": "Toyota",
+        "modello": "Rav4",
+        "catalogo": "2.5 PHEV E-CVT More Style AWD-i",
+        "colore": "",
+        "data_fine": "2026-09-26",
+        "fonte": "Kinto",
+        "cat_orig": "MATTEO"
+      },
+      {
+        "targa": "HA798WN",
+        "marca": "Toyota",
+        "modello": "Yaris Cross",
+        "catalogo": "1.5H Trend E-CVT",
+        "colore": "",
+        "data_fine": "2028-09-17",
+        "fonte": "Kinto",
+        "cat_orig": "NOLEGGIO ESTERNO"
+      }
+    ],
+    "Courtesy Carrozzeria": [
+      {
+        "targa": "HA767KC",
+        "marca": "Toyota",
+        "modello": "Proace City Electric",
+        "catalogo": "50kWh L1 S Comfort",
+        "colore": "",
+        "data_fine": "2026-07-21",
+        "fonte": "Kinto",
+        "cat_orig": "NICO CARROZZERIA"
+      }
+    ]
+  },
+  "Giambone": {
+    "Kinto": [
+      {
+        "targa": "GV536VS",
+        "marca": "Lexus",
+        "modello": "Lbx",
+        "catalogo": "Elegant 2WD",
+        "colore": "",
+        "data_fine": "2026-01-17",
+        "fonte": "Kinto",
+        "cat_orig": "VISIBILITY"
+      },
+      {
+        "targa": "GV073VL",
+        "marca": "Lexus",
+        "modello": "Lbx",
+        "catalogo": "Emotion 2WD",
+        "colore": "",
+        "data_fine": "2026-01-28",
+        "fonte": "Kinto",
+        "cat_orig": "VISIBILITY  DANIELE"
+      },
+      {
+        "targa": "GV539VS",
+        "marca": "Lexus",
+        "modello": "Lbx",
+        "catalogo": "Emotion 2WD",
+        "colore": "",
+        "data_fine": "2026-01-28",
+        "fonte": "Kinto",
+        "cat_orig": "VISIBILITY"
+      },
+      {
+        "targa": "GV033VL",
+        "marca": "Lexus",
+        "modello": "Lbx",
+        "catalogo": "Relax 2WD",
+        "colore": "",
+        "data_fine": "2025-12-25",
+        "fonte": "Kinto",
+        "cat_orig": "VISIBILITY"
+      },
+      {
+        "targa": "GT634ST",
+        "marca": "Lexus",
+        "modello": "Nx",
+        "catalogo": "Hybrid Luxury 4WD",
+        "colore": "",
+        "data_fine": "2028-03-31",
+        "fonte": "Kinto",
+        "cat_orig": "NOLEGGIO ESTERNO"
+      },
+      {
+        "targa": "GG604RY",
+        "marca": "Toyota",
+        "modello": "Aygo Connect",
+        "catalogo": "1.0 VVT-i x-business light",
+        "colore": "",
+        "data_fine": "2026-04-30",
+        "fonte": "Kinto",
+        "cat_orig": "FLEX"
+      },
+      {
+        "targa": "GZ808WZ",
+        "marca": "Toyota",
+        "modello": "Aygo X",
+        "catalogo": "1.0B (72 CV) Active",
+        "colore": "",
+        "data_fine": "2027-05-31",
+        "fonte": "Kinto",
+        "cat_orig": "FLEX"
+      },
+      {
+        "targa": "GZ816WZ",
+        "marca": "Toyota",
+        "modello": "Aygo X",
+        "catalogo": "1.0B (72 CV) Active",
+        "colore": "",
+        "data_fine": "2027-06-02",
+        "fonte": "Kinto",
+        "cat_orig": "FLEX"
+      },
+      {
+        "targa": "GZ817WZ",
+        "marca": "Toyota",
+        "modello": "Aygo X",
+        "catalogo": "1.0B (72 CV) Active",
+        "colore": "",
+        "data_fine": "2027-05-31",
+        "fonte": "Kinto",
+        "cat_orig": "FLEX"
+      },
+      {
+        "targa": "GZ897PW",
+        "marca": "Toyota",
+        "modello": "Aygo X",
+        "catalogo": "1.0B (72 CV) Active",
+        "colore": "",
+        "data_fine": "2027-05-01",
+        "fonte": "Kinto",
+        "cat_orig": "CAGNOLINO"
+      },
+      {
+        "targa": "GZ933WZ",
+        "marca": "Toyota",
+        "modello": "Aygo X",
+        "catalogo": "1.0B (72 CV) Active",
+        "colore": "",
+        "data_fine": "2027-05-31",
+        "fonte": "Kinto",
+        "cat_orig": ""
+      },
+      {
+        "targa": "HA817AE",
+        "marca": "Toyota",
+        "modello": "Aygo X",
+        "catalogo": "1.0B (72 CV) Active",
+        "colore": "",
+        "data_fine": "2027-06-30",
+        "fonte": "Kinto",
+        "cat_orig": "CAGNOLINO"
+      },
+      {
+        "targa": "GJ294YP",
+        "marca": "Toyota",
+        "modello": "Aygo X",
+        "catalogo": "1.0B (72 CV) Limited Air S-CVT",
+        "colore": "",
+        "data_fine": "2027-01-29",
+        "fonte": "Kinto",
+        "cat_orig": "SHARE"
+      },
+      {
+        "targa": "GS888YW",
+        "marca": "Toyota",
+        "modello": "C-Hr",
+        "catalogo": "1.8 HV E-CVT Trend MY24",
+        "colore": "",
+        "data_fine": "2026-01-31",
+        "fonte": "Kinto",
+        "cat_orig": "FLEX"
+      },
+      {
+        "targa": "GS954YW",
+        "marca": "Toyota",
+        "modello": "C-Hr",
+        "catalogo": "1.8 HV E-CVT Trend MY24",
+        "colore": "",
+        "data_fine": "2026-01-31",
+        "fonte": "Kinto",
+        "cat_orig": "FLEX"
+      },
+      {
+        "targa": "GS957YW",
+        "marca": "Toyota",
+        "modello": "C-Hr",
+        "catalogo": "1.8 HV E-CVT Trend MY24",
+        "colore": "",
+        "data_fine": "2026-01-31",
+        "fonte": "Kinto",
+        "cat_orig": "FLEX"
+      },
+      {
+        "targa": "GY044NN",
+        "marca": "Toyota",
+        "modello": "C-Hr",
+        "catalogo": "2.0 PHEV E-CVT Trend",
+        "colore": "",
+        "data_fine": "2026-08-25",
+        "fonte": "Kinto",
+        "cat_orig": ""
+      },
+      {
+        "targa": "GY064NN",
+        "marca": "Toyota",
+        "modello": "C-Hr",
+        "catalogo": "2.0 PHEV E-CVT Trend",
+        "colore": "",
+        "data_fine": "2026-08-25",
+        "fonte": "Kinto",
+        "cat_orig": "FLEX"
+      },
+      {
+        "targa": "GZ776XB",
+        "marca": "Toyota",
+        "modello": "Prius",
+        "catalogo": "Plug-in Hybrid Lounge",
+        "colore": "",
+        "data_fine": "2026-05-31",
+        "fonte": "Kinto",
+        "cat_orig": "LEXUS"
+      },
+      {
+        "targa": "GZ803WZ",
+        "marca": "Toyota",
+        "modello": "Prius",
+        "catalogo": "Plug-in Hybrid Lounge",
+        "colore": "",
+        "data_fine": "2026-05-31",
+        "fonte": "Kinto",
+        "cat_orig": "LEXUS"
+      },
+      {
+        "targa": "HA782PR",
+        "marca": "Toyota",
+        "modello": "Proace",
+        "catalogo": "2.0D 144cv M/T L2 D 14q Comfort",
+        "colore": "",
+        "data_fine": "2026-08-31",
+        "fonte": "Kinto",
+        "cat_orig": ""
+      },
+      {
+        "targa": "GX292YC",
+        "marca": "Toyota",
+        "modello": "Proace City Verso",
+        "catalogo": "1.2P 110CV M/T L1 Executive",
+        "colore": "",
+        "data_fine": "2026-12-31",
+        "fonte": "Kinto",
+        "cat_orig": "FLEX"
+      },
+      {
+        "targa": "GX290YC",
+        "marca": "Toyota",
+        "modello": "Proace City Verso",
+        "catalogo": "1.5D 100CV M/T L1 Executive",
+        "colore": "",
+        "data_fine": "2026-12-31",
+        "fonte": "Kinto",
+        "cat_orig": "FLEX"
+      },
+      {
+        "targa": "GX297YC",
+        "marca": "Toyota",
+        "modello": "Proace City Verso",
+        "catalogo": "1.5D 100CV M/T L1 Executive",
+        "colore": "",
+        "data_fine": "2026-12-31",
+        "fonte": "Kinto",
+        "cat_orig": "FLEX"
+      },
+      {
+        "targa": "GZ178KP",
+        "marca": "Toyota",
+        "modello": "Proace Electric",
+        "catalogo": "75 kWh L1 S 1000Kg Comfort",
+        "colore": "",
+        "data_fine": "2028-05-01",
+        "fonte": "Kinto",
+        "cat_orig": ""
+      },
+      {
+        "targa": "HA779KC",
+        "marca": "Toyota",
+        "modello": "Proace Electric",
+        "catalogo": "75 kWh L1 S 1000Kg Comfort",
+        "colore": "",
+        "data_fine": "2026-07-21",
+        "fonte": "Kinto",
+        "cat_orig": ""
+      },
+      {
+        "targa": "GE653MJ",
+        "marca": "Toyota",
+        "modello": "Yaris",
+        "catalogo": "Hybrid Business MY20",
+        "colore": "",
+        "data_fine": "2025-11-30",
+        "fonte": "Kinto",
+        "cat_orig": "FLEX"
+      },
+      {
+        "targa": "GE688MJ",
+        "marca": "Toyota",
+        "modello": "Yaris",
+        "catalogo": "Hybrid Business MY20",
+        "colore": "",
+        "data_fine": "2025-11-30",
+        "fonte": "Kinto",
+        "cat_orig": "FLEX"
+      },
+      {
+        "targa": "GS037NV",
+        "marca": "Toyota",
+        "modello": "Yaris",
+        "catalogo": "Hybrid Trend MY22",
+        "colore": "",
+        "data_fine": "2027-12-31",
+        "fonte": "Kinto",
+        "cat_orig": "FLEX"
+      },
+      {
+        "targa": "GS857LW",
+        "marca": "Toyota",
+        "modello": "Yaris",
+        "catalogo": "Hybrid Trend MY22",
+        "colore": "",
+        "data_fine": "2027-12-20",
+        "fonte": "Kinto",
+        "cat_orig": "FLEX"
+      },
+      {
+        "targa": "GS869LW",
+        "marca": "Toyota",
+        "modello": "Yaris",
+        "catalogo": "Hybrid Trend MY22",
+        "colore": "",
+        "data_fine": "2027-12-20",
+        "fonte": "Kinto",
+        "cat_orig": "FLEX"
+      }
+    ],
+    "Courtesy Officina": [
+      {
+        "targa": "GN310LN",
+        "marca": "Lexus",
+        "modello": "Nx",
+        "catalogo": "Hybrid Business 4WD MY22",
+        "colore": "",
+        "data_fine": "2026-03-31",
+        "fonte": "Kinto",
+        "cat_orig": "OFFICINA LEXUS"
+      },
+      {
+        "targa": "GP612AT",
+        "marca": "Lexus",
+        "modello": "Nx",
+        "catalogo": "Hybrid Business 4WD MY22",
+        "colore": "",
+        "data_fine": "2026-05-11",
+        "fonte": "Kinto",
+        "cat_orig": "OFFICINA LEXUS"
+      },
+      {
+        "targa": "GP317FN",
+        "marca": "Lexus",
+        "modello": "Rz",
+        "catalogo": "Full Electric DESIGN",
+        "colore": "",
+        "data_fine": "2026-05-31",
+        "fonte": "Kinto",
+        "cat_orig": "OFFICINA LEXUS"
+      },
+      {
+        "targa": "HC187DY",
+        "marca": "Toyota",
+        "modello": "Aygo X",
+        "catalogo": "Hybrid 115 e-CVT",
+        "colore": "",
+        "data_fine": "2027-12-29",
+        "fonte": "Kinto",
+        "cat_orig": "OFFICINA"
+      },
+      {
+        "targa": "HC521DX",
+        "marca": "Toyota",
+        "modello": "Aygo X",
+        "catalogo": "Hybrid 115 e-CVT",
+        "colore": "",
+        "data_fine": "2027-12-29",
+        "fonte": "Kinto",
+        "cat_orig": "OFFICINA"
+      }
+    ],
+    "Courtesy Carrozzeria": [
+      {
+        "targa": "GZ019PX",
+        "marca": "Toyota",
+        "modello": "Aygo X",
+        "catalogo": "1.0B (72 CV) Active",
+        "colore": "",
+        "data_fine": "2027-05-01",
+        "fonte": "Kinto",
+        "cat_orig": "CARROZZERIA"
+      },
+      {
+        "targa": "GZ075PX",
+        "marca": "Toyota",
+        "modello": "Aygo X",
+        "catalogo": "1.0B (72 CV) Active",
+        "colore": "",
+        "data_fine": "2027-05-01",
+        "fonte": "Kinto",
+        "cat_orig": "CARROZZERIA"
+      },
+      {
+        "targa": "GZ937PW",
+        "marca": "Toyota",
+        "modello": "Aygo X",
+        "catalogo": "1.0B (72 CV) Active",
+        "colore": "",
+        "data_fine": "2027-05-01",
+        "fonte": "Kinto",
+        "cat_orig": "CARROZZERIA"
+      },
+      {
+        "targa": "HA319AC",
+        "marca": "Toyota",
+        "modello": "Aygo X",
+        "catalogo": "1.0B (72 CV) Active",
+        "colore": "",
+        "data_fine": "2027-06-29",
+        "fonte": "Kinto",
+        "cat_orig": "CARROZZERIA"
+      },
+      {
+        "targa": "HA321AC",
+        "marca": "Toyota",
+        "modello": "Aygo X",
+        "catalogo": "1.0B (72 CV) Active",
+        "colore": "",
+        "data_fine": "2027-06-30",
+        "fonte": "Kinto",
+        "cat_orig": "CARROZZERIA"
+      },
+      {
+        "targa": "GZ193WX",
+        "marca": "Toyota",
+        "modello": "Aygo X",
+        "catalogo": "1.0B (72 CV) Active S-CVT",
+        "colore": "",
+        "data_fine": "2027-06-02",
+        "fonte": "Kinto",
+        "cat_orig": "CARROZZERIA"
+      },
+      {
+        "targa": "HC120DY",
+        "marca": "Toyota",
+        "modello": "Aygo X",
+        "catalogo": "Hybrid 115 e-CVT",
+        "colore": "",
+        "data_fine": "2027-12-29",
+        "fonte": "Kinto",
+        "cat_orig": "CARROZZERIA"
+      },
+      {
+        "targa": "HC029DY",
+        "marca": "Toyota",
+        "modello": "Aygo X",
+        "catalogo": "Hybrid 115 Icon e-CVT",
+        "colore": "",
+        "data_fine": "2027-12-29",
+        "fonte": "Kinto",
+        "cat_orig": "CARROZZERIA"
+      },
+      {
+        "targa": "HC513DX",
+        "marca": "Toyota",
+        "modello": "Aygo X",
+        "catalogo": "Hybrid 115 Icon e-CVT",
+        "colore": "",
+        "data_fine": "2027-12-29",
+        "fonte": "Kinto",
+        "cat_orig": "CARROZZERIA"
+      },
+      {
+        "targa": "HC686DX",
+        "marca": "Toyota",
+        "modello": "Aygo X",
+        "catalogo": "Hybrid 115 Icon e-CVT",
+        "colore": "",
+        "data_fine": "2027-12-29",
+        "fonte": "Kinto",
+        "cat_orig": "CARROZZERIA"
+      },
+      {
+        "targa": "GS807YW",
+        "marca": "Toyota",
+        "modello": "C-Hr",
+        "catalogo": "1.8 HV E-CVT Trend MY24",
+        "colore": "",
+        "data_fine": "2026-01-31",
+        "fonte": "Kinto",
+        "cat_orig": "CARROZZERIA"
+      },
+      {
+        "targa": "GY073NN",
+        "marca": "Toyota",
+        "modello": "C-Hr",
+        "catalogo": "2.0 PHEV E-CVT Trend",
+        "colore": "",
+        "data_fine": "2026-08-25",
+        "fonte": "Kinto",
+        "cat_orig": "CARROZZERIA"
+      },
+      {
+        "targa": "GY090NN",
+        "marca": "Toyota",
+        "modello": "C-Hr",
+        "catalogo": "2.0 PHEV E-CVT Trend",
+        "colore": "",
+        "data_fine": "2026-08-25",
+        "fonte": "Kinto",
+        "cat_orig": "TEST DRIVE  ora carrozzeria"
+      },
+      {
+        "targa": "GY994RG",
+        "marca": "Toyota",
+        "modello": "C-Hr",
+        "catalogo": "2.0 PHEV E-CVT Trend",
+        "colore": "",
+        "data_fine": "2026-08-31",
+        "fonte": "Kinto",
+        "cat_orig": "CARROZZERIA"
+      }
+    ],
+    "Lista Demo": [
+      {
+        "targa": "HC110DY",
+        "marca": "Toyota",
+        "modello": "Bz4X",
+        "catalogo": "BEV 224 CV ICON FWD",
+        "colore": "",
+        "data_fine": "2027-07-01",
+        "fonte": "Kinto",
+        "cat_orig": "DEMO"
+      },
+      {
+        "targa": "HB082PT",
+        "marca": "Toyota",
+        "modello": "C-Hr",
+        "catalogo": "Hybrid 140 Trend",
+        "colore": "PEARL WHITE BLACK",
+        "data_fine": "3000-12-31",
+        "fonte": "Kinto",
+        "cat_orig": "DEMO"
+      },
+      {
+        "targa": "HC370NK",
+        "marca": "Toyota",
+        "modello": "C-Hr",
+        "catalogo": "Plug-in Hybrid 220 Lounge Hero",
+        "colore": "",
+        "data_fine": "2027-08-01",
+        "fonte": "Kinto",
+        "cat_orig": "DEMO"
+      },
+      {
+        "targa": "HA572PR",
+        "marca": "Toyota",
+        "modello": "Corolla Cross",
+        "catalogo": "Hybrid 200 Premium AWD",
+        "colore": "",
+        "data_fine": "2027-02-28",
+        "fonte": "Kinto",
+        "cat_orig": "DEMO"
+      },
+      {
+        "targa": "GZ355SM",
+        "marca": "Toyota",
+        "modello": "Yaris Cross",
+        "catalogo": "1.5H (130 CV) Lounge E-CVT AWD-i",
+        "colore": "",
+        "data_fine": "2026-05-31",
+        "fonte": "Kinto",
+        "cat_orig": "DEMO"
+      },
+      {
+        "targa": "GV651NM",
+        "marca": "Toyota",
+        "modello": "Corolla Ts",
+        "catalogo": "COROLLA TS 1.8 GR SPORT MY24",
+        "colore": "",
+        "data_fine": "01/05/2024",
+        "fonte": "Proprietà",
+        "assicurazione": "ASSICURATA",
+        "cat_orig": ""
+      },
+      {
+        "targa": "GZ545GH",
+        "marca": "Toyota",
+        "modello": "Yaris",
+        "catalogo": "TREND",
+        "colore": "",
+        "data_fine": "01/03/2025",
+        "fonte": "Proprietà",
+        "assicurazione": "ASSICURATA",
+        "cat_orig": ""
+      },
+      {
+        "targa": "GZ968PG",
+        "marca": "Toyota",
+        "modello": "Yaris Cross",
+        "catalogo": "Hybrid 130 GR SPORT",
+        "colore": "",
+        "data_fine": "01/05/2025",
+        "fonte": "Proprietà",
+        "assicurazione": "ASSICURATA",
+        "cat_orig": ""
+      }
+    ]
+  },
+  "Lexus": {
+    "Kinto": [
+      {
+        "targa": "GZ810WZ",
+        "marca": "Toyota",
+        "modello": "Aygo X",
+        "catalogo": "1.0B (72 CV) Active",
+        "colore": "",
+        "data_fine": "2027-05-31",
+        "fonte": "Kinto",
+        "cat_orig": "FLEX"
+      }
+    ]
+  },
+  "Collegno": {
+    "Courtesy Officina": [
+      {
+        "targa": "GZ877PX",
+        "marca": "Toyota",
+        "modello": "Aygo X",
+        "catalogo": "1.0B (72 CV) Active S-CVT",
+        "colore": "",
+        "data_fine": "2027-05-01",
+        "fonte": "Kinto",
+        "cat_orig": "OFFICINA"
+      }
+    ],
+    "Kinto": [
+      {
+        "targa": "HB078PT",
+        "marca": "Toyota",
+        "modello": "C-Hr",
+        "catalogo": "Hybrid 140 Trend",
+        "colore": "blu",
+        "data_fine": "3000-12-31",
+        "fonte": "Kinto",
+        "cat_orig": ""
+      },
+      {
+        "targa": "GX207YC",
+        "marca": "Toyota",
+        "modello": "Proace City Verso",
+        "catalogo": "1.2P 110CV M/T L1 Executive",
+        "colore": "",
+        "data_fine": "2026-12-31",
+        "fonte": "Kinto",
+        "cat_orig": "FLEX"
+      }
+    ],
+    "Lista Demo": [
+      {
+        "targa": "HC388NK",
+        "marca": "Toyota",
+        "modello": "C-Hr",
+        "catalogo": "Plug-in Hybrid 220 Lounge Hero",
+        "colore": "bianco/nero",
+        "data_fine": "2027-08-01",
+        "fonte": "Kinto",
+        "cat_orig": "DEMO IN USO TRIPI"
+      },
+      {
+        "targa": "GZ038WP",
+        "marca": "Toyota",
+        "modello": "Yaris Cross",
+        "catalogo": "1.5H (130 CV) Lounge E-CVT AWD-i",
+        "colore": "verde",
+        "data_fine": "2026-05-31",
+        "fonte": "Kinto",
+        "cat_orig": "DEMO"
+      },
+      {
+        "targa": "GV004YH",
+        "marca": "Toyota",
+        "modello": "Corolla Ts",
+        "catalogo": "COROLLA TS 1.8 GR SPORT MY24",
+        "colore": "",
+        "data_fine": "01/05/2024",
+        "fonte": "Proprietà",
+        "assicurazione": "NO ASSICURAZIONE",
+        "cat_orig": ""
+      },
+      {
+        "targa": "GZ549GH",
+        "marca": "Toyota",
+        "modello": "Yaris",
+        "catalogo": "TREND",
+        "colore": "",
+        "data_fine": "01/03/2025",
+        "fonte": "Proprietà",
+        "assicurazione": "ASSICURATA",
+        "cat_orig": ""
+      },
+      {
+        "targa": "GZ933TS",
+        "marca": "Toyota",
+        "modello": "Yaris Cross",
+        "catalogo": "Hybrid 130 GR SPORT",
+        "colore": "",
+        "data_fine": "01/05/2025",
+        "fonte": "Proprietà",
+        "assicurazione": "ASSICURATA",
+        "cat_orig": ""
+      }
+    ]
+  },
+  "Cialdini": {
+    "Kinto": [
+      {
+        "targa": "HC082DY",
+        "marca": "Toyota",
+        "modello": "Aygo X",
+        "catalogo": "Hybrid 115 e-CVT",
+        "colore": "",
+        "data_fine": "2027-12-29",
+        "fonte": "Kinto",
+        "cat_orig": ""
+      },
+      {
+        "targa": "GY002NN",
+        "marca": "Toyota",
+        "modello": "C-Hr",
+        "catalogo": "2.0 PHEV E-CVT Trend",
+        "colore": "",
+        "data_fine": "2026-08-25",
+        "fonte": "Kinto",
+        "cat_orig": ""
+      },
+      {
+        "targa": "GZ315KP",
+        "marca": "Toyota",
+        "modello": "Proace City Electric",
+        "catalogo": "50kWh L1 S Comfort",
+        "colore": "",
+        "data_fine": "2028-05-01",
+        "fonte": "Kinto",
+        "cat_orig": ""
+      }
+    ]
+  },
+  "Alessandria": {
+    "Courtesy Officina": [
+      {
+        "targa": "GS979YW",
+        "marca": "Toyota",
+        "modello": "C-Hr",
+        "catalogo": "1.8 HV E-CVT Trend MY24",
+        "colore": "DARK TEAL MET",
+        "data_fine": "2026-02-15",
+        "fonte": "Kinto",
+        "cat_orig": "OFFICINA"
+      }
+    ],
+    "Kinto": [
+      {
+        "targa": "HB340PR",
+        "marca": "Toyota",
+        "modello": "C-Hr",
+        "catalogo": "Hybrid 140 Trend",
+        "colore": "DARK BLUE MICA & BLACK",
+        "data_fine": "3000-12-31",
+        "fonte": "Kinto",
+        "cat_orig": ""
+      }
+    ],
+    "Lista Demo": [
+      {
+        "targa": "HC991NK",
+        "marca": "Toyota",
+        "modello": "C-Hr",
+        "catalogo": "Plug-in Hybrid 220 Lounge Hero",
+        "colore": "EVEREST GREEN",
+        "data_fine": "2027-08-01",
+        "fonte": "Kinto",
+        "cat_orig": "DEMO"
+      },
+      {
+        "targa": "GZ410SM",
+        "marca": "Toyota",
+        "modello": "Yaris Cross",
+        "catalogo": "1.5H (130 CV) Lounge E-CVT AWD-i",
+        "colore": "EVEREST GREEN",
+        "data_fine": "2026-05-31",
+        "fonte": "Kinto",
+        "cat_orig": "DEMO"
+      },
+      {
+        "targa": "GV003YH",
+        "marca": "Toyota",
+        "modello": "Corolla Ts",
+        "catalogo": "COROLLA TS 1.8 GR SPORT MY24",
+        "colore": "",
+        "data_fine": "01/05/2024",
+        "fonte": "Proprietà",
+        "assicurazione": "ASSICURATA",
+        "cat_orig": ""
+      },
+      {
+        "targa": "GZ547GH",
+        "marca": "Toyota",
+        "modello": "Yaris",
+        "catalogo": "TREND",
+        "colore": "",
+        "data_fine": "01/03/2025",
+        "fonte": "Proprietà",
+        "assicurazione": "ASSICURATA",
+        "cat_orig": ""
+      },
+      {
+        "targa": "HA450SG",
+        "marca": "Toyota",
+        "modello": "Corolla Cross",
+        "catalogo": "COROLLA CROSS 2,0 AWD PREMIUM",
+        "colore": "",
+        "data_fine": "19/08/2025",
+        "fonte": "Proprietà",
+        "assicurazione": "",
+        "cat_orig": ""
+      },
+      {
+        "targa": "GZ925TS",
+        "marca": "Toyota",
+        "modello": "Yaris Cross",
+        "catalogo": "Hybrid 130 GR SPORT",
+        "colore": "",
+        "data_fine": "01/05/2025",
+        "fonte": "Proprietà",
+        "assicurazione": "ASSICURATA",
+        "cat_orig": ""
+      }
+    ]
+  },
+  "Borgaro": {
+    "Kinto": [
+      {
+        "targa": "HB081PT",
+        "marca": "Toyota",
+        "modello": "C-Hr",
+        "catalogo": "Hybrid 140 Trend",
+        "colore": "DARK BLU MICA",
+        "data_fine": "3000-12-31",
+        "fonte": "Kinto",
+        "cat_orig": "BORGARO"
+      }
+    ],
+    "Lista Demo": [
+      {
+        "targa": "HC989NK",
+        "marca": "Toyota",
+        "modello": "C-Hr",
+        "catalogo": "Plug-in Hybrid 220 Lounge Hero",
+        "colore": "PEARL WHITE BLACK",
+        "data_fine": "2027-08-01",
+        "fonte": "Kinto",
+        "cat_orig": "DEMO IN USO URSO"
+      },
+      {
+        "targa": "GZ415SM",
+        "marca": "Toyota",
+        "modello": "Yaris Cross",
+        "catalogo": "1.5H (130 CV) Lounge E-CVT AWD-i",
+        "colore": "EVEREST GREEN",
+        "data_fine": "2026-05-31",
+        "fonte": "Kinto",
+        "cat_orig": "DEMO"
+      },
+      {
+        "targa": "GV908NM",
+        "marca": "Toyota",
+        "modello": "Corolla Ts",
+        "catalogo": "COROLLA TS 1.8 GR SPORT MY24",
+        "colore": "",
+        "data_fine": "01/05/2024",
+        "fonte": "Proprietà",
+        "assicurazione": "NO ASSICURAZIONE",
+        "cat_orig": ""
+      },
+      {
+        "targa": "GZ548GH",
+        "marca": "Toyota",
+        "modello": "Yaris",
+        "catalogo": "TREND",
+        "colore": "",
+        "data_fine": "01/03/2025",
+        "fonte": "Proprietà",
+        "assicurazione": "ASSICURATA",
+        "cat_orig": ""
+      },
+      {
+        "targa": "HA448SG",
+        "marca": "Toyota",
+        "modello": "Corolla Cross",
+        "catalogo": "COROLLA CROSS 2,0 AWD PREMIUM",
+        "colore": "",
+        "data_fine": "19/08/2025",
+        "fonte": "Proprietà",
+        "assicurazione": "",
+        "cat_orig": ""
+      },
+      {
+        "targa": "GZ993PG",
+        "marca": "Toyota",
+        "modello": "Yaris Cross",
+        "catalogo": "Hybrid 130 GR SPORT",
+        "colore": "",
+        "data_fine": "01/05/2025",
+        "fonte": "Proprietà",
+        "assicurazione": "ASSICURATA",
+        "cat_orig": ""
+      }
+    ]
+  },
+  "Ferrucci": {
+    "Kinto": [
+      {
+        "targa": "HB084PT",
+        "marca": "Toyota",
+        "modello": "C-Hr",
+        "catalogo": "Hybrid 140 Trend",
+        "colore": "blu/nero",
+        "data_fine": "3000-12-31",
+        "fonte": "Kinto",
+        "cat_orig": ""
+      }
+    ],
+    "Lista Demo": [
+      {
+        "targa": "HC375NK",
+        "marca": "Toyota",
+        "modello": "C-Hr",
+        "catalogo": "Plug-in Hybrid 220 Lounge Hero",
+        "colore": "bianco perla/nero",
+        "data_fine": "2027-08-01",
+        "fonte": "Kinto",
+        "cat_orig": "DEMO"
+      },
+      {
+        "targa": "GZ364SM",
+        "marca": "Toyota",
+        "modello": "Yaris Cross",
+        "catalogo": "1.5H (130 CV) Lounge E-CVT AWD-i",
+        "colore": "verde",
+        "data_fine": "2026-05-31",
+        "fonte": "Kinto",
+        "cat_orig": "DEMO"
+      },
+      {
+        "targa": "GV907NM",
+        "marca": "Toyota",
+        "modello": "Corolla Ts",
+        "catalogo": "COROLLA TS 1.8 GR SPORT MY24",
+        "colore": "",
+        "data_fine": "01/05/2024",
+        "fonte": "Proprietà",
+        "assicurazione": "NO ASSICURAZIONE",
+        "cat_orig": ""
+      },
+      {
+        "targa": "GZ546GH",
+        "marca": "Toyota",
+        "modello": "Yaris",
+        "catalogo": "TREND",
+        "colore": "",
+        "data_fine": "01/03/2025",
+        "fonte": "Proprietà",
+        "assicurazione": "ASSICURATA",
+        "cat_orig": ""
+      },
+      {
+        "targa": "HA447SG",
+        "marca": "Toyota",
+        "modello": "Corolla Cross",
+        "catalogo": "COROLLA CROSS 2,0 AWD PREMIUM",
+        "colore": "",
+        "data_fine": "19/08/2025",
+        "fonte": "Proprietà",
+        "assicurazione": "",
+        "cat_orig": ""
+      },
+      {
+        "targa": "GZ924TS",
+        "marca": "Toyota",
+        "modello": "Yaris Cross",
+        "catalogo": "Hybrid 130 GR SPORT",
+        "colore": "",
+        "data_fine": "01/05/2025",
+        "fonte": "Proprietà",
+        "assicurazione": "ASSICURATA",
+        "cat_orig": ""
+      }
+    ]
+  }
+};
+
+const ADESIVI = new Set(["GY994RG", "GZ993PG", "HC686DX", "HD691LT", "HB078PT", "GZ364SM", "HB292ZT", "GZ548GH", "HD252NK", "HA321AC", "HA319AC", "GZ937PW", "GZ075PX", "HB269ZT", "HD493LV", "GZ968PG", "GZ545GH", "HB084PT", "HD493VP", "HC120DY", "HB278ZT", "HC513DX", "HD495VP", "HC029DY", "HD724LT", "GZ193WX", "HB152ZT", "HC187DY", "HB082PT", "HC093DY", "HD271RS", "GY073NN", "HC521DX", "HD027LV", "HD453VP", "GZ019PX", "HD253NK", "GL202CV", "GZ877PX", "HC083DY", "GZ038WP"]);
+
+const CAT_ORDER = ["Lista Demo","Courtesy Carrozzeria","Courtesy Officina","Flex","Cagnolino","Visibility","Noleggio Esterno","In Uso","Altro"];
+
+function catBadge(cat) {
+  const map = {
+    "Lista Demo":"badge-cat1",
+    "Courtesy Officina":"badge-cat2",
+    "Courtesy Carrozzeria":"badge-cat3",
+    "Flex":"badge-cat4",
+    "Cagnolino":"badge-cat5",
+    "Visibility":"badge-cat6",
+    "Noleggio Esterno":"badge-cat4",
+    "Lexus":"badge-proprieta",
+  };
+  return map[cat] || "badge-cat4";
+}
+
+let sedeCorrente = null;
+let catCorrente = null;
+let searchVal = "";
+let filterModello = null;
+let filterMarca = null;
+
+function toggleDrawer() {
+  document.getElementById("sidebar").classList.toggle("open");
+  document.getElementById("drawerOverlay").classList.toggle("open");
+}
+function closeDrawer() {
+  document.getElementById("sidebar").classList.remove("open");
+  document.getElementById("drawerOverlay").classList.remove("open");
+}
+
+function syncSearch(el) {
+  searchVal = el.value;
+  document.getElementById("searchInput").value = searchVal;
+  document.getElementById("searchMobile").value = searchVal;
+  renderTable();
+}
+
+function buildSidebar() {
+  const container = document.getElementById("sidebarSedi");
+  container.innerHTML = "";
+  const sediOrdinate = Object.keys(DATA).sort((a,b) => {
+    const priority = ["Giambone","Ferrucci","Collegno","Borgaro","Alessandria","Lexus","Cialdini","In Uso","Noleggio Esterno"];
+    const ia = priority.indexOf(a), ib = priority.indexOf(b);
+    if(ia>=0 && ib>=0) return ia-ib;
+    if(ia>=0) return -1; if(ib>=0) return 1;
+    return a.localeCompare(b);
+  });
+
+  sediOrdinate.forEach(sede => {
+    const cats = DATA[sede];
+    const tot = Object.values(cats).reduce((s,l)=>s+l.length,0);
+    const isOpen = sede === sedeCorrente;
+    const item = document.createElement("div");
+    item.className = "sede-item";
+    const header = document.createElement("div");
+    header.className = "sede-header" + (isOpen?" active open":"");
+    header.innerHTML = `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/></svg><span class="name">${sede}</span><span class="count">${tot}</span><span class="chevron">▶</span>`;
+    header.onclick = () => {
+      if(sedeCorrente === sede){ sedeCorrente=null; catCorrente=null; }
+      else { sedeCorrente=sede; catCorrente=null; }
+      filterModello=null; filterMarca=null;
+      resetFilterBtns();
+      buildSidebar(); updateStats(); renderTable();
+    };
+    const children = document.createElement("div");
+    children.className = "sede-children"+(isOpen?" open":"");
+    const catKeys = Object.keys(cats).sort((a,b) => {
+      const oa = CAT_ORDER.indexOf(a), ob = CAT_ORDER.indexOf(b);
+      if(oa>=0&&ob>=0) return oa-ob;
+      if(oa>=0) return -1; if(ob>=0) return 1;
+      return a.localeCompare(b);
+    });
+    catKeys.forEach(cat => {
+      const ci = document.createElement("div");
+      ci.className = "cat-item"+(isOpen&&cat===catCorrente?" active":"");
+      ci.innerHTML = `<span>${cat}</span><span class="cnt">${cats[cat].length}</span>`;
+      ci.onclick = (e) => {
+        e.stopPropagation();
+        sedeCorrente=sede; catCorrente=cat;
+        filterModello=null; filterMarca=null;
+        resetFilterBtns();
+        buildSidebar(); updateStats(); renderTable(); closeDrawer();
+      };
+      children.appendChild(ci);
+    });
+    item.appendChild(header);
+    item.appendChild(children);
+    container.appendChild(item);
+  });
+}
+
+function updateStats() {
+  const bar = document.getElementById("statsBar");
+  if(!sedeCorrente){ bar.style.display="none"; return; }
+  bar.style.display="flex";
+  const cats = DATA[sedeCorrente];
+  const demo = (cats["Lista Demo"]||[]).length;
+  const off  = (cats["Courtesy Officina"]||[]).length;
+  const carr = (cats["Courtesy Carrozzeria"]||[]).length;
+  const tot  = Object.values(cats).reduce((s,l)=>s+l.length,0);
+  const altro = tot-demo-off-carr;
+  document.getElementById("statTot").textContent=tot;
+  document.getElementById("statDemo").textContent=demo;
+  document.getElementById("statOff").textContent=off;
+  document.getElementById("statCarr").textContent=carr;
+  document.getElementById("statAltro").textContent=altro;
+}
+
+function getListaCorrente() {
+  if(!sedeCorrente) return [];
+  const cats = DATA[sedeCorrente];
+  if(catCorrente) return (cats[catCorrente]||[]).map(a=>({...a,cat:catCorrente,sede:sedeCorrente}));
+  let out=[];
+  Object.keys(cats).forEach(c=>cats[c].forEach(a=>out.push({...a,cat:c,sede:sedeCorrente})));
+  return out;
+}
+
+function toggleFilter(tipo) {
+  const other = tipo==="modello"?"marca":"modello";
+  document.getElementById("drop"+cap(other)).classList.remove("open");
+  document.getElementById("btn"+cap(other)).classList.remove("active");
+  const drop = document.getElementById("drop"+cap(tipo));
+  const btn  = document.getElementById("btn"+cap(tipo));
+  if(drop.classList.contains("open")){ drop.classList.remove("open"); btn.classList.remove("active"); return; }
+
+  let lista = sedeCorrente ? getListaCorrente() : getAllAuto();
+  const vals = [...new Set(lista.map(a=>a[tipo]).filter(Boolean))].sort();
+  const attivo = tipo==="modello"?filterModello:filterMarca;
+  drop.innerHTML = vals.map(v=>`<div class="filter-option ${attivo===v?"selected":""}" onclick="setFilter('${tipo}','${v.replace(/'/g,"\'")}')">\<span class="tick">✓</span>${v}</div>`).join("")
+    + `<div class="filter-clear" onclick="setFilter('${tipo}',null)">✕ Rimuovi filtro</div>`;
+  drop.classList.add("open");
+  btn.classList.add("active");
+}
+
+function cap(s){ return s.charAt(0).toUpperCase()+s.slice(1); }
+
+function setFilter(tipo, val) {
+  if(tipo==="modello") filterModello=val;
+  else filterMarca=val;
+  document.getElementById("drop"+cap(tipo)).classList.remove("open");
+  const lbl = val?`${cap(tipo)}: ${val} ▾`:`${cap(tipo)} ▾`;
+  const btn = document.getElementById("btn"+cap(tipo));
+  btn.textContent=lbl;
+  if(val) btn.classList.add("active"); else btn.classList.remove("active");
+  renderTable();
+}
+
+function resetFilterBtns(){
+  filterModello=null; filterMarca=null;
+  document.getElementById("btnModello").textContent="Modello ▾";
+  document.getElementById("btnMarca").textContent="Marca ▾";
+  document.getElementById("btnModello").classList.remove("active");
+  document.getElementById("btnMarca").classList.remove("active");
+}
+
+function getAllAuto(){
+  let out=[];
+  Object.keys(DATA).forEach(sede=>Object.keys(DATA[sede]).forEach(cat=>DATA[sede][cat].forEach(a=>out.push({...a,cat,sede}))));
+  return out;
+}
+
+function fmtDate(d){ return d||""; }
+
+function renderTable() {
+  const body = document.getElementById("tableBody");
+  const empty = document.getElementById("emptyState");
+  const q = searchVal.toLowerCase().trim();
+
+  if(q.length>=2){
+    document.getElementById("bcSede").textContent="Ricerca globale";
+    document.getElementById("bcCat").textContent=`"${q}"`;
+    document.getElementById("pageDesc").textContent="Risultati in tutte le sedi.";
+    document.getElementById("statsBar").style.display="none";
+    const lista = getAllAuto().filter(a=>
+      (a.targa||"").toLowerCase().includes(q)||
+      (a.modello||"").toLowerCase().includes(q)||
+      (a.marca||"").toLowerCase().includes(q)||
+      (a.catalogo||"").toLowerCase().includes(q)||
+      (a.colore||"").toLowerCase().includes(q)
+    );
+    if(!lista.length){body.innerHTML="";empty.style.display="block";return;}
+    empty.style.display="none";
+    body.innerHTML=lista.map(a=>{
+      const hasAd = adesivi.has(a.targa);
+      return `<tr class="${hasAd?'adesivo':''}" id="row-${a.targa}">
+        <td><div class="targa-cell"><div class="accent-bar"></div><span class="targa-text">${a.targa}</span></div></td>
+        <td><span class="badge badge-marca">${a.modello||"—"}</span><br><span style="font-size:10px;color:var(--text-muted)">${a.sede}</span></td>
+        <td style="font-size:12px;color:var(--text-dim)">${a.catalogo||"—"}</td>
+        <td><span class="badge ${catBadge(a.cat)}">${a.cat}</span></td>
+        <td><span class="${a.fonte==="Proprietà"?"tag-prop":"tag-kinto"}">${a.fonte}</span></td>
+        <td class="date-cell">${fmtDate(a.data_fine)}</td>
+        <td><button class="btn-adesivo ${hasAd?'on':''}" onclick="toggleAdesivo('${a.targa}',this)" title="Adesivo applicato">🏷️</button></td>
+      </tr>`;
+    }).join("");
+    return;
+  }
+
+  document.getElementById("bcSede").textContent=sedeCorrente||"—";
+  document.getElementById("bcCat").textContent=catCorrente||(sedeCorrente?"Tutte le categorie":"Seleziona una sede");
+  document.getElementById("pageDesc").textContent=!sedeCorrente
+    ?"Seleziona una sede dalla sidebar."
+    :catCorrente?`${catCorrente} — ${sedeCorrente}`:`Tutte le auto di ${sedeCorrente}.`;
+
+  if(!sedeCorrente){body.innerHTML="";empty.style.display="none";return;}
+
+  let lista = getListaCorrente();
+  if(filterModello) lista=lista.filter(a=>a.modello===filterModello);
+  if(filterMarca)   lista=lista.filter(a=>a.marca===filterMarca);
+
+  if(!lista.length){body.innerHTML="";empty.style.display="block";return;}
+  empty.style.display="none";
+  body.innerHTML=lista.map(a=>{
+    const hasAd = adesivi.has(a.targa);
+    return `<tr class="${hasAd?'adesivo':''}" id="row-${a.targa}">
+      <td><div class="targa-cell"><div class="accent-bar"></div><span class="targa-text">${a.targa}</span></div></td>
+      <td><span class="badge badge-marca">${a.modello||"—"}</span></td>
+      <td style="font-size:12px;color:var(--text-dim)">${a.catalogo||"—"}</td>
+      <td><span class="badge ${catBadge(a.cat)}">${a.cat}</span></td>
+      <td><span class="${a.fonte==="Proprietà"?"tag-prop":"tag-kinto"}">${a.fonte}</span></td>
+      <td class="date-cell">${fmtDate(a.data_fine)}</td>
+      <td><button class="btn-adesivo ${hasAd?'on':''}" onclick="toggleAdesivo('${a.targa}',this)" title="Adesivo applicato">🏷️</button></td>
+    </tr>`;
+  }).join("");
+}
+
+document.addEventListener("click",(e)=>{
+  if(!e.target.closest(".filter-wrap")){
+    document.querySelectorAll(".filter-dropdown").forEach(d=>d.classList.remove("open"));
+  }
+});
+
+
+const adesivi = new Set(ADESIVI);
+
+function toggleAdesivo(targa, btn) {
+  if (adesivi.has(targa)) {
+    adesivi.delete(targa);
+    btn.classList.remove('on');
+    const row = document.getElementById('row-' + targa);
+    if (row) row.classList.remove('adesivo');
+  } else {
+    adesivi.add(targa);
+    btn.classList.add('on');
+    const row = document.getElementById('row-' + targa);
+    if (row) row.classList.add('adesivo');
+  }
+}
+
+buildSidebar();
+renderTable();
+</script>
+</body>
+</html>
