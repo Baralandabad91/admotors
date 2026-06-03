@@ -151,7 +151,8 @@ body{
 /* ============ TABLE ============ */
 .table-wrap{flex:1;overflow-y:auto;padding:14px 24px 28px;}
 table{width:100%;border-collapse:collapse;}
-thead th{font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);padding:11px 12px;text-align:left;border-bottom:1px solid var(--border-strong);position:sticky;top:0;background:var(--bg);z-index:2;}
+thead th{font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);padding:11px 12px;text-align:left;border-bottom:1px solid var(--border-strong);position:sticky;top:0;background:var(--bg);z-index:2;transition:transform .22s ease, opacity .22s ease;}
+thead.hide-header th{transform:translateY(-100%);opacity:0;pointer-events:none;}
 tbody tr{border-bottom:1px solid var(--border);transition:background .12s;}
 tbody tr:hover{background:var(--violet-dim);}
 tbody tr:last-child{border-bottom:none;}
@@ -214,17 +215,21 @@ tbody td{padding:12px;font-size:13px;vertical-align:middle;}
   .content-header{padding:14px 16px 0;}
   .filter-btn{font-size:11.5px;padding:7px 11px;}
   .table-wrap{padding:12px 12px 90px;overflow-x:hidden;}
-  table{width:100%;}
-  .targa-text{white-space:nowrap;}
-  thead th:nth-child(3),tbody td:nth-child(3),
-  thead th:nth-child(5),tbody td:nth-child(5){display:none;}
+  table{width:100%;table-layout:fixed;}
+  /* su mobile: TARGA | MODELLO | CATALOGO | flag — nascondi Categoria, Fonte, Data Fine */
+  thead th:nth-child(4),tbody td:nth-child(4),
+  thead th:nth-child(5),tbody td:nth-child(5),
+  thead th:nth-child(6),tbody td:nth-child(6){display:none;}
+  /* larghezze colonne mobile */
+  thead th:nth-child(1),tbody td:nth-child(1){width:34%;padding-left:10px;}
+  thead th:nth-child(2),tbody td:nth-child(2){width:26%;}
+  thead th:nth-child(3),tbody td:nth-child(3){width:auto;}
+  thead th:nth-child(7),tbody td:nth-child(7){width:40px;padding-left:0;padding-right:6px;}
   tbody td{padding:11px 8px;}
-  /* colonna Data Fine leggibile su mobile (niente taglio a destra) */
-  thead th:nth-child(6),tbody td:nth-child(6){padding-right:10px;white-space:normal;}
-  .date-cell{font-size:11px;line-height:1.25;}
-  thead th:nth-child(1),tbody td:nth-child(1){padding-left:10px;}
-  .targa-text{font-size:12px;}
-  .badge{font-size:10px;padding:3px 7px;}
+  /* CATALOGO accorciato con "…" su mobile */
+  td.catalogo-cell{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:0;}
+  .targa-text{font-size:12px;white-space:nowrap;}
+  .badge{font-size:10px;padding:3px 7px;white-space:nowrap;}
   .filter-dropdown{position:fixed;left:12px;right:12px;top:auto;width:auto;}
   /* card statistiche (61/10/6...) compatte su una sola riga, solo mobile */
   .stats-bar{padding:8px 12px;gap:6px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
@@ -371,6 +376,17 @@ tbody tr.adesivo .accent-bar { background:#4ade80!important; }
 .btn-cancel:hover{color:var(--text);border-color:var(--border-strong);}
 .btn-confirm{background:linear-gradient(135deg,var(--violet),#5b3fcf);border:none;border-radius:var(--r-sm);padding:10px 20px;font-family:'Syne',sans-serif;font-size:13px;font-weight:600;color:#fff;cursor:pointer;transition:filter .15s;min-height:42px;}
 .btn-confirm:hover{filter:brightness(1.08);}
+/* riga cliccabile per info auto */
+.clickable-row{cursor:pointer;}
+.clickable-row .targa-text{transition:color .15s;}
+.clickable-row:hover .targa-text{color:var(--violet-light);}
+/* dettaglio info auto */
+.info-grid{display:flex;flex-direction:column;gap:2px;}
+.info-row{display:flex;justify-content:space-between;align-items:baseline;gap:16px;padding:11px 0;border-bottom:1px solid var(--border);}
+.info-row:last-child{border-bottom:none;}
+.info-key{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);flex-shrink:0;}
+.info-val{font-size:14px;color:var(--text);text-align:right;word-break:break-word;}
+.info-val.mono{font-family:'DM Mono',monospace;letter-spacing:.04em;}
 .field-select{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);padding:11px 13px;font-family:'Syne',sans-serif;font-size:13.5px;color:var(--text);outline:none;transition:border-color .15s,box-shadow .15s;cursor:pointer;appearance:none;min-height:44px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238786a0' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 13px center;}
 .field-select:focus{border-color:var(--violet);box-shadow:0 0 0 3px var(--violet-dim);}
 .field-select option{background:var(--surface);}
@@ -581,6 +597,25 @@ tbody tr.adesivo .accent-bar { background:#4ade80!important; }
     <div class="modal-footer">
       <button class="btn-cancel" onclick="closeModal()">Annulla</button>
       <button class="btn-confirm" onclick="confermaAggiungi()">Aggiungi</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL INFO AUTO -->
+<div class="modal-overlay" id="infoOverlay" onclick="closeInfoOnOverlay(event)">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="infoTitleTxt">
+    <div class="modal-header">
+      <div class="modal-title" id="infoTitleTxt">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="6" rx="1.5"/><path d="M5 11l1.6-4.2A2 2 0 018.5 5.5h7a2 2 0 011.9 1.3L19 11"/><circle cx="7.5" cy="14" r="1"/><circle cx="16.5" cy="14" r="1"/></svg>
+        <span id="infoTarga">—</span>
+      </div>
+      <button class="modal-close" onclick="closeInfo()" aria-label="Chiudi">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" id="infoBody"></div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeInfo()">Chiudi</button>
     </div>
   </div>
 </div>
@@ -1905,6 +1940,7 @@ function goHome() {
   // chiudi eventuali overlay aperti
   closeDrawer();
   closeModal();
+  if (typeof closeInfo === "function") closeInfo();
   document.querySelectorAll(".filter-dropdown").forEach(d => d.classList.remove("open"));
   const ms = document.querySelector(".mobile-search");
   if (ms) ms.style.display = "none";
@@ -2082,14 +2118,14 @@ function renderTable() {
     empty.style.display="none";
     body.innerHTML=lista.map(a=>{
       const hasAd = adesivi.has(a.targa);
-      return `<tr class="${hasAd?'adesivo':''}" id="row-${a.targa}">
+      return `<tr class="${hasAd?'adesivo':''} clickable-row" id="row-${a.targa}" onclick="apriInfoAuto('${a.targa}','${a.sede}','${(a.cat||'').replace(/'/g,"\\'")}')">
         <td><div class="targa-cell"><div class="accent-bar"></div><span class="targa-text">${a.targa}</span></div></td>
         <td><span class="badge badge-marca">${a.modello||"—"}</span><br><span style="font-size:10px;color:var(--text-muted)">${a.sede}</span></td>
-        <td style="font-size:12px;color:var(--text-dim)">${a.catalogo||"—"}</td>
+        <td class="catalogo-cell" style="font-size:12px;color:var(--text-dim)">${a.catalogo||"—"}</td>
         <td><span class="badge ${catBadge(a.cat)}">${a.cat}</span></td>
         <td><span class="${a.fonte==="Proprietà"?"tag-prop":"tag-kinto"}">${a.fonte}</span></td>
         <td class="date-cell">${fmtDate(a.data_fine)}</td>
-        <td><button class="btn-adesivo ${hasAd?'on':''}" onclick="toggleAdesivo('${a.targa}',this)" title="Adesivo applicato" aria-label="Segna adesivo">${TAG_SVG}</button></td>
+        <td><button class="btn-adesivo ${hasAd?'on':''}" onclick="event.stopPropagation();toggleAdesivo('${a.targa}',this)" title="Adesivo applicato" aria-label="Segna adesivo">${TAG_SVG}</button></td>
       </tr>`;
     }).join("");
     return;
@@ -2111,14 +2147,14 @@ function renderTable() {
   empty.style.display="none";
   body.innerHTML=lista.map(a=>{
     const hasAd = adesivi.has(a.targa);
-    return `<tr class="${hasAd?'adesivo':''}" id="row-${a.targa}">
+    return `<tr class="${hasAd?'adesivo':''} clickable-row" id="row-${a.targa}" onclick="apriInfoAuto('${a.targa}','${a.sede}','${(a.cat||'').replace(/'/g,"\\'")}')">
       <td><div class="targa-cell"><div class="accent-bar"></div><span class="targa-text">${a.targa}</span></div></td>
       <td><span class="badge badge-marca">${a.modello||"—"}</span></td>
-      <td style="font-size:12px;color:var(--text-dim)">${a.catalogo||"—"}</td>
+      <td class="catalogo-cell" style="font-size:12px;color:var(--text-dim)">${a.catalogo||"—"}</td>
       <td><span class="badge ${catBadge(a.cat)}">${a.cat}</span></td>
       <td><span class="${a.fonte==="Proprietà"?"tag-prop":"tag-kinto"}">${a.fonte}</span></td>
       <td class="date-cell">${fmtDate(a.data_fine)}</td>
-      <td><button class="btn-adesivo ${hasAd?'on':''}" onclick="toggleAdesivo('${a.targa}',this)" title="Adesivo applicato" aria-label="Segna adesivo">${TAG_SVG}</button></td>
+      <td><button class="btn-adesivo ${hasAd?'on':''}" onclick="event.stopPropagation();toggleAdesivo('${a.targa}',this)" title="Adesivo applicato" aria-label="Segna adesivo">${TAG_SVG}</button></td>
     </tr>`;
   }).join("");
 }
@@ -2149,7 +2185,21 @@ buildSidebar();
 renderTable();
 aggiornaBtnAggiungi();
 
-/* Intestazione tabella sempre fissa (nessun effetto scomparsa, n\u00e9 mobile n\u00e9 desktop) */
+/* Intestazione tabella: scompare scrollando in giù, ricompare salendo (PC e mobile) */
+(function() {
+  let lastY = 0;
+  document.addEventListener("scroll", handleScroll, true);
+  function handleScroll(e) {
+    const wrap = e.target;
+    if (!wrap || !wrap.classList || !wrap.classList.contains("table-wrap")) return;
+    const thead = wrap.querySelector("thead");
+    if (!thead) return;
+    const y = wrap.scrollTop;
+    if (y > lastY && y > 30) { thead.classList.add("hide-header"); }
+    else { thead.classList.remove("hide-header"); }
+    lastY = y;
+  }
+})();
 
 /* ---- AGGIUNGI TARGA ---- */
 function aggiornaBtnAggiungi() {
@@ -2216,6 +2266,58 @@ function closeModal() {
 
 function closeModalOnOverlay(e) {
   if (e.target === document.getElementById("modalOverlay")) closeModal();
+}
+
+/* ---- INFO AUTO (clic su targa/riga) ---- */
+function trovaAuto(targa, sede, cat) {
+  const cats = DATA[sede];
+  if (!cats) return null;
+  if (cat && cats[cat]) {
+    const found = cats[cat].find(a => a.targa === targa);
+    if (found) return { ...found, cat, sede };
+  }
+  // fallback: cerca in tutte le categorie della sede
+  for (const c of Object.keys(cats)) {
+    const f = cats[c].find(a => a.targa === targa);
+    if (f) return { ...f, cat: c, sede };
+  }
+  return null;
+}
+
+function escInfo(e){ if(e.key==="Escape") closeInfo(); }
+
+function apriInfoAuto(targa, sede, cat) {
+  const a = trovaAuto(targa, sede, cat);
+  if (!a) return;
+  document.getElementById("infoTarga").textContent = a.targa;
+  const righe = [
+    ["Marca", a.marca || "—", false],
+    ["Modello", a.modello || "—", false],
+    ["Catalogo", a.catalogo || "—", false],
+    ["Sede", a.sede || "—", false],
+    ["Categoria", a.cat || "—", false],
+    ["Fonte", a.fonte || "—", false],
+    ["Data fine", a.data_fine || "—", true],
+  ];
+  if (a.colore) righe.push(["Colore", a.colore, false]);
+  if (a.assicurazione) righe.push(["Assicurazione", a.assicurazione, false]);
+  document.getElementById("infoBody").innerHTML =
+    '<div class="info-grid">' +
+    righe.map(([k, v, mono]) =>
+      `<div class="info-row"><span class="info-key">${k}</span><span class="info-val${mono ? ' mono' : ''}">${v}</span></div>`
+    ).join("") +
+    '</div>';
+  document.getElementById("infoOverlay").classList.add("open");
+  document.addEventListener("keydown", escInfo);
+}
+
+function closeInfo() {
+  document.getElementById("infoOverlay").classList.remove("open");
+  document.removeEventListener("keydown", escInfo);
+}
+
+function closeInfoOnOverlay(e) {
+  if (e.target === document.getElementById("infoOverlay")) closeInfo();
 }
 
 function clearFieldError(el){
