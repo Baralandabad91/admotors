@@ -187,11 +187,36 @@ tbody td{padding:12px;font-size:13px;vertical-align:middle;}
   .sidebar{position:fixed;top:0;left:0;bottom:0;z-index:110;transform:translateX(-100%);width:284px;box-shadow:4px 0 28px rgba(0,0,0,.55);}
   .sidebar.open{transform:translateX(0);}
   .topbar{display:none;}
-  .home-panel{padding:0;min-height:220px;}
-  .home-tot-overlay{top:auto;bottom:20px;left:20px;}
+
+  /* ---- HOME / HERO mobile: niente titolo tagliato ---- */
+  .home-panel{padding:0;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;align-items:flex-start;}
+  .lamp-stage{min-height:100%;padding:0;align-items:flex-start;}
+  .lamp-beam-left,.lamp-beam-right{width:18rem;height:9rem;}
+  @keyframes lampGrowLeft{from{opacity:.4;width:10rem;}to{opacity:1;width:18rem;}}
+  @keyframes lampGrowRight{from{opacity:.4;width:10rem;}to{opacity:1;width:18rem;}}
+  .lamp-blur{width:16rem;height:6rem;}
+  .lamp-glow{width:11rem;height:6rem;transform:translateY(-3.5rem);}
+  .lamp-line{width:18rem;transform:translateY(-4.2rem);}
+  .lamp-mask{height:7rem;transform:translateY(-7.5rem);}
+  /* il contenuto scende: parte sotto al fascio invece di salire e tagliarsi */
+  .lamp-content{transform:none;padding:76px 18px 48px;}
+  .lamp-title{font-size:clamp(2rem,9vw,2.8rem);line-height:1.08;}
+  .lamp-sub{font-size:13px;max-width:340px;}
+  .lamp-eyebrow{margin-bottom:10px;}
+  .lamp-stats{margin-top:22px;gap:8px;flex-wrap:nowrap;width:100%;max-width:360px;align-items:stretch;}
+  .lamp-stat{padding:12px 8px 14px;min-width:0;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+  .lamp-stat-num{font-size:22px;}
+  .lamp-stat-label{font-size:9.5px;letter-spacing:.04em;white-space:nowrap;}
+  .lbl-full{display:none;}
+  .lbl-short{display:inline;}
+  .home-panel::after{display:none;}
+  .home-tot-overlay{display:none;}
+
   .content-header{padding:14px 16px 0;}
   .filter-btn{font-size:11.5px;padding:7px 11px;}
-  .table-wrap{padding:12px 12px 90px;}
+  .table-wrap{padding:12px 12px 90px;overflow-x:hidden;}
+  table{width:100%;}
+  .targa-text{white-space:nowrap;}
   thead th:nth-child(3),tbody td:nth-child(3),
   thead th:nth-child(5),tbody td:nth-child(5){display:none;}
   tbody td{padding:11px 8px;}
@@ -201,6 +226,10 @@ tbody td{padding:12px;font-size:13px;vertical-align:middle;}
   .stats-bar{padding:10px 12px;gap:8px;}
   .stat-item{min-width:80px;padding:8px 12px;}
   .stat-num{font-size:18px;}
+
+  /* ---- intestazione tabella SEMPRE fissa su mobile (niente "saltello") ---- */
+  thead.hide-header th{transform:none!important;opacity:1!important;pointer-events:auto!important;}
+  thead th{transition:none!important;}
 }
 
 /* ============ PRINT / TOOLBAR BUTTONS ============ */
@@ -287,6 +316,8 @@ tbody tr.adesivo .accent-bar { background:#4ade80!important; }
 .lamp-stat-num.cyan{color:var(--cyan-light);}
 .lamp-stat-num.amber{color:var(--cat-amber);}
 .lamp-stat-label{font-size:10.5px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.07em;font-weight:600;margin-top:6px;}
+.lbl-short{display:none;}
+.lbl-full{display:inline;}
 .lamp-hint{margin-top:30px;display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-muted);opacity:0;animation:lampRise .8s ease .7s both;}
 .lamp-hint svg{width:14px;height:14px;}
 .home-panel::after{content:'';position:absolute;bottom:0;left:0;right:0;height:35%;background:linear-gradient(to bottom,transparent,var(--bg));pointer-events:none;z-index:4;}
@@ -431,7 +462,7 @@ tbody tr.adesivo .accent-bar { background:#4ade80!important; }
           <div class="lamp-stats">
             <div class="lamp-stat">
               <div class="lamp-stat-num amber" id="homeTotNum">0</div>
-              <div class="lamp-stat-label">Auto totali</div>
+              <div class="lamp-stat-label"><span class="lbl-full">Auto totali</span><span class="lbl-short">Auto</span></div>
             </div>
             <div class="lamp-stat">
               <div class="lamp-stat-num violet" id="homeSediNum">0</div>
@@ -2135,9 +2166,14 @@ aggiornaBtnAggiungi();
   function handleScroll(e) {
     const wrap = e.target;
     if (!wrap || !wrap.classList || !wrap.classList.contains("table-wrap")) return;
-    const y = wrap.scrollTop;
     const thead = wrap.querySelector("thead");
     if (!thead) return;
+    // Su mobile l'intestazione resta sempre fissa (niente effetto scomparsa)
+    if (window.matchMedia("(max-width:760px)").matches) {
+      thead.classList.remove("hide-header");
+      return;
+    }
+    const y = wrap.scrollTop;
     if (y > lastY && y > 30) { thead.classList.add("hide-header"); }
     else { thead.classList.remove("hide-header"); }
     lastY = y;
