@@ -151,8 +151,7 @@ body{
 /* ============ TABLE ============ */
 .table-wrap{flex:1;overflow-y:auto;padding:14px 24px 28px;}
 table{width:100%;border-collapse:collapse;}
-thead th{font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);padding:11px 12px;text-align:left;border-bottom:1px solid var(--border-strong);position:sticky;top:0;background:var(--bg);z-index:2;transition:transform .22s ease, opacity .22s ease;}
-thead.hide-header th{transform:translateY(-100%);opacity:0;pointer-events:none;}
+thead th{font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);padding:11px 12px;text-align:left;border-bottom:1px solid var(--border-strong);position:sticky;top:0;background:var(--bg);z-index:2;}
 tbody tr{border-bottom:1px solid var(--border);transition:background .12s;}
 tbody tr:hover{background:var(--violet-dim);}
 tbody tr:last-child{border-bottom:none;}
@@ -220,16 +219,20 @@ tbody td{padding:12px;font-size:13px;vertical-align:middle;}
   thead th:nth-child(3),tbody td:nth-child(3),
   thead th:nth-child(5),tbody td:nth-child(5){display:none;}
   tbody td{padding:11px 8px;}
+  /* colonna Data Fine leggibile su mobile (niente taglio a destra) */
+  thead th:nth-child(6),tbody td:nth-child(6){padding-right:10px;white-space:normal;}
+  .date-cell{font-size:11px;line-height:1.25;}
+  thead th:nth-child(1),tbody td:nth-child(1){padding-left:10px;}
   .targa-text{font-size:12px;}
   .badge{font-size:10px;padding:3px 7px;}
   .filter-dropdown{position:fixed;left:12px;right:12px;top:auto;width:auto;}
-  .stats-bar{padding:10px 12px;gap:8px;}
-  .stat-item{min-width:80px;padding:8px 12px;}
-  .stat-num{font-size:18px;}
-
-  /* ---- intestazione tabella SEMPRE fissa su mobile (niente "saltello") ---- */
-  thead.hide-header th{transform:none!important;opacity:1!important;pointer-events:auto!important;}
-  thead th{transition:none!important;}
+  /* card statistiche (61/10/6...) compatte su una sola riga, solo mobile */
+  .stats-bar{padding:8px 12px;gap:6px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+  .stats-bar::-webkit-scrollbar{display:none;}
+  .stat-item{flex-direction:row;align-items:baseline;gap:5px;padding:6px 10px;min-width:0;border-radius:var(--r-sm);flex-shrink:0;}
+  .stat-num{font-size:15px;}
+  .stat-label{font-size:8.5px;letter-spacing:.03em;}
+  .stat-item .stat-num{order:0;}
 }
 
 /* ============ PRINT / TOOLBAR BUTTONS ============ */
@@ -459,20 +462,6 @@ tbody tr.adesivo .accent-bar { background:#4ade80!important; }
           <div class="lamp-eyebrow">AD Motors · Gestione Flotta</div>
           <h1 class="lamp-title">La tua flotta,<br>sotto controllo</h1>
           <p class="lamp-sub">Tutte le auto delle sedi in un'unica vista. Seleziona una sede dal menu per esplorare targhe, modelli e categorie.</p>
-          <div class="lamp-stats">
-            <div class="lamp-stat">
-              <div class="lamp-stat-num amber" id="homeTotNum">0</div>
-              <div class="lamp-stat-label"><span class="lbl-full">Auto totali</span><span class="lbl-short">Auto</span></div>
-            </div>
-            <div class="lamp-stat">
-              <div class="lamp-stat-num violet" id="homeSediNum">0</div>
-              <div class="lamp-stat-label">Sedi</div>
-            </div>
-            <div class="lamp-stat">
-              <div class="lamp-stat-num cyan" id="homeKintoNum">0</div>
-              <div class="lamp-stat-label">Kinto</div>
-            </div>
-          </div>
           <div class="lamp-hint">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
             Apri il menu Sedi per iniziare
@@ -2160,25 +2149,7 @@ buildSidebar();
 renderTable();
 aggiornaBtnAggiungi();
 
-(function() {
-  let lastY = 0;
-  document.addEventListener("scroll", handleScroll, true);
-  function handleScroll(e) {
-    const wrap = e.target;
-    if (!wrap || !wrap.classList || !wrap.classList.contains("table-wrap")) return;
-    const thead = wrap.querySelector("thead");
-    if (!thead) return;
-    // Su mobile l'intestazione resta sempre fissa (niente effetto scomparsa)
-    if (window.matchMedia("(max-width:760px)").matches) {
-      thead.classList.remove("hide-header");
-      return;
-    }
-    const y = wrap.scrollTop;
-    if (y > lastY && y > 30) { thead.classList.add("hide-header"); }
-    else { thead.classList.remove("hide-header"); }
-    lastY = y;
-  }
-})();
+/* Intestazione tabella sempre fissa (nessun effetto scomparsa, n\u00e9 mobile n\u00e9 desktop) */
 
 /* ---- AGGIUNGI TARGA ---- */
 function aggiornaBtnAggiungi() {
@@ -2201,7 +2172,8 @@ function aggiornaBtnAggiungi() {
     homePanel.style.display = "flex";
     contentHeader.style.display = "none";
     if (thead) thead.style.display = "none";
-    document.getElementById("homeTotNum").textContent = tot;
+    const totEl = document.getElementById("homeTotNum");
+    if (totEl) totEl.textContent = tot;
     const sediEl = document.getElementById("homeSediNum");
     if (sediEl) sediEl.textContent = Object.keys(DATA).length;
     const kintoEl = document.getElementById("homeKintoNum");
